@@ -82,4 +82,5 @@ There a couple important things to mention when following my replication. Firstl
 
 # References
 Card & Krueger 1994 Minimum Wages and Employment: A Case Study of the Fast-Food Industry in New Jersey and Pennsylvania https://davidcard.berkeley.edu/papers/njmin-aer.pdf
+
 Hill, Griffiths & Lim 2016 Principles of Econometrics, 5th Edition
