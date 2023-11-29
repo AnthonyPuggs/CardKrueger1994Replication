@@ -17,5 +17,12 @@ ols1 = ols('fte ~ nj + d + nj*d', data=df).fit()
 print(ols1.summary())
 
 #diff-in-diff regression using controls
-ols2 = ols('fte ~ nj + d + nj*d + bk + kfc + roys + wendys + co_owned + centralj + southj + pa1', data=df).fit()
+ols2 = ols('fte ~ nj + d + nj*d + kfc + roys + wendys + co_owned + centralj + southj + pa1', data=df).fit()
 print(ols2.summary())
+
+#Regression-adjusted models 
+ols3 = ols('demp ~ nj', data=df).fit()
+print(ols3.summary())
+
+ols4 = ols('demp ~ nj + co_owned + kfc + roys + wendys', data=df).fit()
+print(ols4.summary())
