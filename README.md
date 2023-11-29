@@ -1,7 +1,15 @@
 # CardKrueger1994Replication
 
 # Introduction
-David Card and Alan Krueger's 1994 paper, "Minimum Wages and Employment: A Case Study of the Fast-Food Industry in New Jersey and Pennsylvania" was a groundbreaking contribution to the labour economics literature. Prior to the early 90s, over 90% of economists agreed that increases in minimum wage would lead to disemployment effects [(Kearl et al., 1979).](https://www.jstor.org/stable/1801612 "A Confusion of Economists?") This helped to kickstart the shift in economists views on minimum wage. It contributed toward the shift of viewing minimum wage effects only in a perfectly competitive labour market, to instead a monospony labour market. 
+David Card and Alan Krueger's 1994 paper, "Minimum Wages and Employment: A Case Study of the Fast-Food Industry in New Jersey and Pennsylvania" was a groundbreaking contribution to the labour economics literature. Prior to the early 90s, over 90% of economists agreed that minimum wage laws reduced employment among low skilled workers [(Kearl et al., 1979).](https://www.jstor.org/stable/1801612 "A Confusion of Economists?") This helped to kickstart the shift in economists views on minimum wage. It contributed toward the shift of viewing minimum wage effects only in a perfectly competitive labour market, to instead a monospony labour market. 
+
+Minimum wages under the assumptions of a perfectly competitive market seem to be incredibly inefficient, causing deadweight loss and having a net negative effect on low skilled workers by decreasing employment of them as a whole to only benefit a few through a higher mandated wage. This is visually represented below.
+
+![image](https://github.com/AnthonyPuggs/CardKrueger1994Replication/assets/61487785/4890f8a4-6f6a-492d-bab2-7d71d253e49b)
+
+In this perfectly competitive market, the market naturally reaches an equilibrium at a wage of $10/hr and quantity of labour of 1,200. As seen, raising the minimum wage to $12/hr causes a movement along the labour supply curve to a higher quantity of labour of 1,600 (more people want to work because the wage is higher) but conversely, this also causes a movement along the labour demand curve to a lower quantity of labour of 700 (firms cannot afford to pay the new minimum wage so firms decrease employment). This effect is visually represented by the surplus of labour, the consumer and producer surplus isn't shown on the figure but it also decreases total surplus, creating deadweight loss. Low skilled workers would have been better off overall if the minimum wage was not increased above the equilibrium.
+
+This follows quite nicely, but introducing monopsonistic labour markets rather than perfect competition provides one theory for why increasing minimum wage doesn't always necessarily decrease employment (as will be empirically shown soon).
 
 On April 1, 1992, New Jersey's minimum wage rose from $4.25 to $5.05 per hour. To evaluate the impact of the law, Card & Krueger surveyed 410 fast-food restaurants in New Jersey and eastern Pennsylvania before and after the minimum wage policy. Comparisons of employment growth at stores in New Jersey and Pennsylvania (where the minimum wage was constant) provide simple estimates of the effect of the higher minimum wage. This analysis provides fascinating results, as we will see below.
 
