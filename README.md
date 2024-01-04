@@ -32,6 +32,12 @@ Now, we can look at the employment effects of the minimum-wage increase – the 
 
 Only the ‘stores by state’ part of table 3 was replicated, as it is most relevant to the DiD method and the results of the paper.  Variable 5 was also not calculated as I was unable to find which stores temporarily closed, and the variable doesn’t really change the overall result. Most values are either identical or very close, with the standard errors having their own rows in the replication. 
 Looking at the mean FTE employment before and after, NJ were initially smaller than their PA counterparts but interestingly grew relative to PA’s stores after the minimum wage increase. To look at the relative gain, we turn to our DiD estimator for change in mean FTE employment, which is 2.75. This estimates that FTE employment increased by 2.75 employees during the period where New Jersey increased their minimum wage. The DiD estimator having a positive sign is contrary to what is predicted by traditional economic theory.
+
+Now for the visual representation of the DiD model:
+![image](https://github.com/AnthonyPuggs/CardKrueger1994Replication/assets/61487785/85ae7a63-1f57-4c95-b0d7-a8109496c872)
+
+As shown, it works according to how I explained it earlier. The counterfactual represents our parallel trend assumption, assuming that where it not for the minimum wage increase (intervention) the treatment group (NJ) would have continued trending downwards like the control group (PA). 
+
 Now, we can instead estimate this using regression analysis which is more accurate than just using sample means.
 We will start simply without any controls, the model is:
 
