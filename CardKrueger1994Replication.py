@@ -12,7 +12,7 @@ import seaborn as sns
 from tabulate import tabulate
 from statsmodels.iolib.summary2 import summary_col
 import statsmodels.api as sm
-
+from adjustText import adjust_text
 
 
 r = requests.get("https://davidcard.berkeley.edu/data_sets/njmin.zip")
@@ -94,7 +94,7 @@ plt.title('February 1992')
 plt.xlabel('Wage Range')
 plt.ylabel('Percentage of Stores')
 #plt.show()
-plt.savefig('scatterplot.png')
+plt.savefig('Distribution of Starting Wage Rates Feb 1992')
 
 
 
@@ -136,6 +136,7 @@ plt.title('November 1992')
 plt.xlabel('Wage Range')
 plt.ylabel('Percentage of Stores')
 #plt.show()
+plt.savefig('Distribution of Starting Wage Rates Nov 1992')
 
 results = df.groupby('state').agg(
     N=pd.NamedAgg(column='fte', aggfunc='size'),
@@ -171,7 +172,6 @@ grouped_data['change_mean_fte'] = grouped_data['mean_after'] - grouped_data['mea
 # Select the desired columns
 result_df = grouped_data[['state', 'mean_before', 'mean_after', 'change_mean_fte', 'se_mean_before', 'se_mean_after']]
 
-# Display the result
 print(result_df)
 
 filtered_data = df.dropna(subset=['fte', 'fte_after'])
@@ -193,7 +193,6 @@ balanced_sample['state'] = balanced_sample.index.map({'0': 'PA', '1': 'NJ'})
 # Select the desired columns
 result_balanced_df = balanced_sample[['state', 'change_mean_fte_balanced']]
 
-# Display the result
 print(result_balanced_df)
 
 #As state is both an index level and a column label, we do a little workaround by resetting the indexes, renaming the column in one of the DataFrames, and then merging the DataFrames on the renamed column. Then drop the renamed column
@@ -236,11 +235,34 @@ result['PA'] = pd.to_numeric(result['PA'], errors='coerce')
 result['NJ'] = pd.to_numeric(result['NJ'], errors='coerce')
 
 # It's important to calculate the difference after ensuring both columns are numeric
-result['Diff_NJ_NA'] = result['NJ'] - result['PA']
+result['Diff_NJ-PA'] = result['NJ'] - result['PA']
 
-result = result[['variable', 'PA', 'NJ', 'Diff_NJ_NA']]
+result = result[['variable', 'PA', 'NJ', 'Diff_NJ-PA']]
 
 print(result)
+
+#New df to add dummy for minimum wage increase to run basic regressions to compare to the mean FTE employment effects
+fte_total = pd.concat([
+    pd.DataFrame({'fte_total': df['fte'], 'd': 0}),
+    pd.DataFrame({'fte_total': df['fte_after'], 'd': 1})
+]).reset_index(drop=True)
+fte_total['state'] = pd.concat([df['state'], df['state']]).reset_index(drop=True)
+fte_total['co_owned'] = pd.concat([df['co_owned'], df['co_owned']]).reset_index(drop=True)
+fte_total['centralj'] = pd.concat([df['centralj'], df['centralj']]).reset_index(drop=True)
+fte_total['southj'] = pd.concat([df['southj'], df['southj']]).reset_index(drop=True)
+fte_total['chain'] = pd.concat([df['chain'], df['chain']]).reset_index(drop=True)
+fte_total['pa1'] = pd.concat([df['pa1'], df['pa1']]).reset_index(drop=True)
+
+#simple diff-in-diff regression without controls
+reg = ols('fte_total ~ d + state + d*state', data=fte_total).fit()
+print(reg.summary())
+
+for i in range(1, 5):
+    fte_total[f'chain{i}'] = fte_total['chain'].apply(lambda x: 1 if x == i else 0)
+
+#simple diff-in-diff regression with controls
+reg2 = ols('fte_total ~ state + d + state*d + chain2 + chain3 + chain4 + co_owned + centralj + southj + pa1', data=fte_total).fit()
+print(reg2.summary())
 
 ### Table 4 code
 est_df = df.copy()
@@ -302,3 +324,105 @@ Table4 = pd.DataFrame({
 })
 
 print(Table4)
+
+def outcome(t, control_intercept, treat_intercept_delta, trend, Δ, group, treated):
+    return control_intercept + (treat_intercept_delta * group) + (t * trend) + (Δ * treated * group)
+
+def is_treated(t, intervention_time, group):
+    return (t > intervention_time) * group
+
+#true parameters
+control_intercept = 23.33
+treat_intercept_delta = -2.89
+trend = -2.16
+Δ = 2.76
+intervention_time = 0.5
+
+fig, ax = plt.subplots()
+ti = np.linspace(0, 1,3)
+ax.plot(
+    ti,
+    outcome(
+        ti,
+        control_intercept,
+        treat_intercept_delta,
+        trend,
+        Δ=0,
+        group=1,
+        treated=is_treated(ti, intervention_time, group=1),
+    ),
+    color="blue",
+    label="Counterfactual",
+    ls=":",
+)
+ax.plot(
+    ti,
+    outcome(
+        ti,
+        control_intercept,
+        treat_intercept_delta,
+        trend,
+        Δ,
+        group=1,
+        treated=is_treated(ti, intervention_time, group=1),
+    ),
+    color="blue",
+    label="Treatment group (NJ)",
+)
+ax.plot(
+    ti,
+    outcome(
+        ti,
+        control_intercept,
+        treat_intercept_delta,
+        trend,
+        Δ,
+        group=0,
+        treated=is_treated(ti, intervention_time, group=0),
+    ),
+    color="C1",
+    label="Control group (PA)",
+)
+ax.axvline(x=intervention_time, ls="-", color="r", label="Intervention", lw=3)
+t = np.array([0, 1])
+ax.plot(
+    t,
+    outcome(
+        t,
+        control_intercept,
+        treat_intercept_delta,
+        trend,
+        Δ,
+        group=1,
+        treated=is_treated(t, intervention_time, group=1),
+    ),
+    "o",
+    color="blue",
+    markersize=0,
+)
+ax.plot(
+    t,
+    outcome(
+        t,
+        control_intercept,
+        treat_intercept_delta,
+        trend,
+        Δ=0,
+        group=0,
+        treated=is_treated(t, intervention_time, group=0),
+    ),
+    "o",
+    color="C1",
+    markersize=0,
+)
+ax.set(
+    xlabel=("time"),
+    ylabel="FTE Employment (mean)",
+    xticks=t,
+    xticklabels=["February 1992", "November 1992"],
+    title="Treatment Effect with Difference-in-Differences Estimator",
+)
+ax.legend();
+#plt.show()
+plt.grid()
+plt.savefig('DID')
