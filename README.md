@@ -36,7 +36,7 @@ Looking at the mean FTE employment before and after, NJ were initially smaller t
 Now for the visual representation of the DiD model:
 ![image](https://github.com/AnthonyPuggs/CardKrueger1994Replication/assets/61487785/85ae7a63-1f57-4c95-b0d7-a8109496c872)
 
-As shown, it works according to how I explained it earlier. The counterfactual represents our parallel trend assumption, assuming that where it not for the minimum wage increase (intervention) the treatment group (NJ) would have continued trending downwards like the control group (PA). 
+As shown, it works according to how I explained it earlier. The counterfactual represents our parallel trend assumption, assuming that where it not for the minimum wage increase (intervention) the treatment group (NJ) would have continued trending downwards like the control group (PA). It’s important to recognise that the graph is just for visual representation reasons. The authors of the paper (nor am I) aren’t claiming that the increase in minimum wage increased employment. Rather that they found no statistically significant effects on employment from the increase in minimum wage, contrary to economic theory claiming it would decrease employment. 
 
 Now, we can instead estimate this using regression analysis which is more accurate than just using sample means.
 We will start simply without any controls, the model is:
@@ -46,7 +46,7 @@ $FTE_{it} = \beta_{1} + \beta_{2}STATE_{i} + \beta_{3}D_{t} + \delta(STATE_{i} \
 Running this model results in the regression output:
 ![image](https://github.com/AnthonyPuggs/CardKrueger1994Replication/assets/61487785/93f50a7f-30cd-4c10-a442-44ee99325c56)
 
-The interaction term, (STATE x D) or nj:d is our difference-in-differences estimator, with the coefficient remaining positive and with the same value of 2.75. Also note the p-value of 0.10, while perhaps not statistically significant enough at a 95% confidence level to claim that minimum wage increased employment, we can say for sure that it did not decrease employment.
+The interaction term, (STATE x D) or d:state is our difference-in-differences estimator, with the coefficient remaining positive and with the same value of 2.75. Also note the p-value of 0.10, while perhaps not statistically significant enough at a 95% confidence level to claim that minimum wage increased employment, we can say for sure that it did not decrease employment.
 
 Now we can do another regression, adding control variables. Some of these are dummy variables for fast-food restaurants and whether the restaurant was company-owned rather than franchise-owned. Some are also dummy variables for geographical regions within the survey area.
 
@@ -66,7 +66,14 @@ and
 
 (1b) $\Delta E_{i}= a' + b'X_{i} + c'GAP_{i} + \varepsilon'_{i}$
 
-The GAP variable is an alternative measure of the impact of the minimum wage at store I based on the initial wage set at that store:
+Where:
+ΔEi is the change in employment from before and after the minimum wage increase at store i
+
+Xi is a set of characteristics of store i
+
+NJi is a dummy variable that equals 1 for stores in New Jersey
+
+GAPi is an alternative measure of the impact of the minimum wage at store i based on the initial wage set at that store (W¬1i):
 
 GAPi = 0 for stores in Pennsylvania
 
@@ -74,16 +81,45 @@ GAPi = 0 for stores in New Jersey with W1i ≥ $5.05
 
 GAPi = (5.05 – W1i)/W1i for other stores in New Jersey
 
-GAP is the proportional increase in wages at store i necessary to meet the new minimum rate. Variation in GAP reflects both the New Jersey-Pennsylvania contrast and differences within New Jersey based on reported starting wages in wave 1.
 Looking at these reduced-form models for change in employment:
 ![image](https://github.com/AnthonyPuggs/CardKrueger1994Replication/assets/61487785/3317eb05-528b-4bb1-942b-10b439a5bd73)
-![image](https://github.com/AnthonyPuggs/CardKrueger1994Replication/assets/61487785/c3502ccc-666f-4dca-91bd-77f709db1ed8)
+![image](https://github.com/AnthonyPuggs/CardKrueger1994Replication/assets/61487785/8936e9bd-12c8-4a89-a411-7160c476ca8c)
 
+Models 1 and 2 used the regression model from 1a, regressing change in FTE employment against the New Jersey dummy variable. In the paper, model 1 is most comparable to the simple DiD of employment changes in column 4, row 4 of table 3 – where the wages in the NJ stores were set at the initial minimum wage ($4.25). This is due to the change in FTE employment being strongest in stores that were initially set at the old minimum wage, as well as the fact that the variable was using a balance sample of stores. 
 
+Model 1 in my replication is instead more comparable to the simple DiD of employment changes in column 4, row 3 of table 3 – not using the balanced sample of stores. Table 4 is not only meant to be using a balanced sample of stores, but also sample of wages. I unfortunately was not able to do this, the more detailed reasons as to why can be found below under the ‘Notes’ header. This is why all the values are a bit different, but they all still convey the same message.
 
+Model 2 introduces four control variables, dummy variables for three of the fast-food chains and another dummy for company-owned stores. This is done to see if any of our control variables significantly change the outcome, which doesn’t seem to be the case by simply looking at the coefficient and standard error. Using joint F tests for exclusion of all control variables, we can see whether these control variables improve the model or not. Looking at the probability value (p-value) for controls, it stands at a p-value of 0.48 (0.34 in the paper). This indicates that the covariates add little to the model and have no statistically significant effect on the size of the estimated New Jersey dummy.
+
+ Models 3 through 5 now instead use the GAP variable to measure the effect of the minimum wage. It’s important to understand that GAPi is the proportional increase in wages at store i necessary to meet the new minimum wage. Variation in GAPi reflects both the New Jersey-Pennsylvania contrast and differences within New Jersey based on reported starting wages in wave 1. From the paper, the mean value of GAPi among NJ stores is 0.11, multiplying that by the model 3 coefficient gives us a 1.72 increase in FTE employment in NJ relative to PA. In my replication, the model 3 coefficient is a bit higher with the mean GAP value among NJ stores being slightly lower. This brings us to an increase in FTE employment of 1.783, which is reasonably close to the original value.
+
+![image](https://github.com/AnthonyPuggs/CardKrueger1994Replication/assets/61487785/01b4a812-5b89-4805-b287-530af8e8c56b)
+
+Model 4 added the same four control variables for chains and company ownership from model 2, and the p-value for controls being at 0.62 (0.44 in the paper) indicates that the covariates add little to the model once again.
+Model 5 includes the prior four control variables, and an additional five control variables for region that include two regions of eastern PA and North, Central, and South NJ. These dummies help to control for any region-specific demand shocks and identify the effect of the minimum wage by comparing employment changes at higher and lower wage stores within the same region of NJ. The p-values for controls being at 0.48 (0.40 in the paper) indicate that again the covariates add little to the model. 
+
+![image](https://github.com/AnthonyPuggs/CardKrueger1994Replication/assets/61487785/41cb44c7-9265-4515-ad1f-be435f26c9b4)
+
+Interestingly, only model 5 has issues with its statistical significance. The addition of the region dummy variables significantly attenuated the GAP coefficient and raised its standard error compared to models 3 and 4. This raised the p-value enough that it is longer possible to reject the null hypothesis of a zero employment effect of the minimum wage, as seen by the p-value of 0.063. The multicollinearity warning that appears in the regression seems to possibly be an issue at first glance. However, the warning is removed when any one of the five region dummies is removed, and the GAP p-value remains at 0.063. Multicollinearity is commonly an issue when adding too many control variables but doesn’t seem to be the issue here.
+
+One reasoning given by the authors of the paper for the statistical insignificance is the presence of measurement error in the starting wage. That even if employment growth has no regional component, the addition of region dummies will lead to some attenuation of the GAP coefficient if some of the true variation in GAP is explained by region. If interested, the authors go much deeper into this in their paper on page 781.
+
+# Specification Tests
+The results in tables 3 and 4 seem to contradict the standard prediction from economic theory that a rise in the minimum wage will reduce employment. Table 5 presents some specification tests to test the robustness of this conclusion. My replication only includes the specifications relating to adjusting the FTE employment calculation, and only has values for change in employment and not proportional change.
+
+![image](https://github.com/AnthonyPuggs/CardKrueger1994Replication/assets/61487785/8eef863a-3ff8-4a30-9ebf-24dea9dc6b4c)
+![image](https://github.com/AnthonyPuggs/CardKrueger1994Replication/assets/61487785/6f9734d4-e2d6-4b35-b1d6-08513fc01b34)
+
+Testing alternative measures of FTE employment is important since the way the measure is calculated (mainly the 0.5 * part-time weighing as full-time) is not perfect. 50% on the basis of two sources of research in this area. First one being the 1991 Current Population Survey revealing that part-time workers in the restaurant industry work about 46% as many hours as full-time workers. The second being a study by Katz and Krueger (1992) that report the ratio of part-time workers’ hours to full-time workers’ hours in the fast-food industry is 0.57.
+
+When redefining FTE to exclude management employees, the change has no effect relative to the base specification. In the other rows, managers are included back in FTE employment, but part-time workers are reweighed as either 40% or 60% of full-time workers (instead of 50%). These reweight changes also have little effect on the models.
 
 
 # Notes
+The difference in values following the table 4 values seem to be from the stores included in the analysis. My replication in Table 4 has 351 observations while the original paper has 357 observations. Table 4 (and everything following, so including table 5) uses a restricted sample that restricts the analysis to the set of stores with available employment (as seen in table 3 with balancing) and wage data in both waves of the survey. In my replication, all observations for which any of the employment variables were ‘NA’ were dropped. This is from the assumption those observations did not share the number of employees, making it unfit for inclusion in the models.
+
+However, it’s possible the original paper treated these differently. From Aaronmams replication (in references below) he redoes the models instead this time dropping observations only if all of full-time employees, part-time employees, and managers equal 0 or those same roles in the second wave equal 0. Or if either starting wage in wave 1 or wave 2 is missing. After implementing this, the observations significantly increased to 370, moving even further away from the original paper.
+It is surely possible to look through the original SAS file for the paper and workout how exactly the stores are included or not – but it feels unnecessary as the values are very close regardless.
 
 # References
 Card & Krueger 1994 Minimum Wages and Employment: A Case Study of the Fast-Food Industry in New Jersey and Pennsylvania https://davidcard.berkeley.edu/papers/njmin-aer.pdf
