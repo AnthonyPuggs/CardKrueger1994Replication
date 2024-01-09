@@ -13,6 +13,7 @@ from tabulate import tabulate
 from statsmodels.iolib.summary2 import summary_col
 import statsmodels.api as sm
 from adjustText import adjust_text
+import scipy.stats as stats
 
 
 r = requests.get("https://davidcard.berkeley.edu/data_sets/njmin.zip")
@@ -35,9 +36,16 @@ df.columns = df.columns.str.lower()
 
 #Full-time equivalent (FTE) employment calculation. FTE = 0.5 x number of part time workers + number of full time workers + number of managers
 df = df.assign(fte=df.empft + 0.5 * df.emppt + df.nmgrs)
-column_descriptions["fte"] = "Full-time-equivalent employment in wave 1 (full_time_employees + managers + 0.5*part_time_employees)"
 df = df.assign(fte_after=df.empft2 + 0.5 * df.emppt2 + df.nmgrs2)
-column_descriptions["fte_after"] = "Full-time-equivalent employment in wave 2 (full_time_employees + managers + 0.5*part_time_employees)"
+#For spec test, FTE excludes managers
+df = df.assign(fte2=df.empft + 0.5 * df.emppt)
+df = df.assign(fte_after2=df.empft2 + 0.5 * df.emppt2)
+#For spec test, FTE weighs part-time as 0.4 * full-time
+df = df.assign(fte3=df.empft + 0.4 * df.emppt + df.nmgrs)
+df = df.assign(fte_after3=df.empft2 + 0.4 * df.emppt2 + df.nmgrs2)
+#For spec test, FTE weighs part-time as 0.6 * full-time
+df = df.assign(fte4=df.empft + 0.6 * df.emppt + df.nmgrs)
+df = df.assign(fte_after4=df.empft2 + 0.6 * df.emppt2 + df.nmgrs2)
 
 #Converts int to str
 df['state'] = df['state'].astype(str)
@@ -98,7 +106,7 @@ plt.savefig('Distribution of Starting Wage Rates Feb 1992')
 
 
 
-###Table 3 code - no new code here, identical to table 2
+###Table 2 code - no new code here, identical to table 2
 table3 = df[['wage_st2', 'state']].copy()
 table3['store'] = 1
 table3['category'] = pd.cut(table3['wage_st2'], bins=bins, labels=labels)
@@ -128,7 +136,7 @@ table3_graph = pd.melt(table3, id_vars=["category"], value_vars=["nj_percent", "
 
 print(table3_graph)
 
-# Table 3 Nov 1992 Wage Range Graph - after min wage
+# Table 2 Nov 1992 Wage Range Graph - after min wage
 plt.figure(figsize=(12, 8))
 sns.set_palette("pastel")
 sns.barplot(x='category', y='percentage', hue='state', data=table3_graph)
@@ -137,6 +145,8 @@ plt.xlabel('Wage Range')
 plt.ylabel('Percentage of Stores')
 #plt.show()
 plt.savefig('Distribution of Starting Wage Rates Nov 1992')
+
+### Table 3 code
 
 results = df.groupby('state').agg(
     N=pd.NamedAgg(column='fte', aggfunc='size'),
@@ -268,12 +278,16 @@ print(reg2.summary())
 est_df = df.copy()
 
 # Filter out rows with NA in specified columns
-est_df = est_df.dropna(subset=['fte', 'fte_after', 'wage_st', 'wage_st2'])
+est_df = est_df.dropna(subset=['fte', 'fte_after', 'fte2', 'fte_after2', 'wage_st', 'wage_st2'])
 
 # Creates column 'delta_emp' as the difference of 'fte_after' and 'fte', change in FTE
 est_df['delta_emp'] = est_df['fte_after'] - est_df['fte']
 est_df['state'] = est_df['state'].astype(int)
 
+#For the spec tests
+est_df['delta_emp2'] = est_df['fte_after2'] - est_df['fte2']
+est_df['delta_emp3'] = est_df['fte_after3'] - est_df['fte3']
+est_df['delta_emp4'] = est_df['fte_after4'] - est_df['fte4']
 
 #Creates the gap variable for the second regression adjusted model, is 0 by default, is 0 for NJ stores with a wage_st of 5.05 or higher, is the difference between 5.05 and the wage_st for NJ stores with a wage_st of 5.05 or lower
 est_df['gap'] = 0  # Default value
@@ -288,7 +302,7 @@ model1 = ols('delta_emp ~ state', data=est_df).fit()
 model2 = ols('delta_emp ~ state + co_owned + chain2 + chain3 + chain4', data=est_df).fit()
 model3 = ols('delta_emp ~ gap', data=est_df).fit()
 model4 = ols('delta_emp ~ gap + co_owned + chain2 + chain3 + chain4', data=est_df).fit()
-model5 = ols('delta_emp ~ gap + co_owned + chain2 + chain3 + chain4 + centralj + northj + pa1', data=est_df).fit()
+model5 = ols('delta_emp ~ gap + co_owned + chain2 + chain3 + chain4 + southj + centralj + northj + pa1 + pa2', data=est_df).fit()
 
 #Taking values from the models, params are the coefficients, bse are the standard errors, scale**.5 gives the standard error of regression
 mod1_coeffs = model1.params
@@ -325,19 +339,64 @@ Table4 = pd.DataFrame({
 
 print(Table4)
 
+#Finds mean value of GAP among New Jersey stores
+mean_gap = est_df.loc[est_df['state'] == 1, 'gap'].mean()
+delta_FTE_gap = mean_gap * mod3_coeffs[1]
+print("Mean value of GAP among NJ stores is", mean_gap.round(3))
+print("An increase in FTE employment in NJ relative to PA of", delta_FTE_gap.round(3))
+
+print(model5.summary())
+
+### Table 5 code
+#Regression models for table 5, spec test. Spec1 excludes managers, spec2 weighs part-time as 0.4 * full-time, spec3 weighs part-time as 0.6 * full-time
+spec1 = ols('delta_emp2 ~ state + co_owned + chain2 + chain3 + chain4', data=est_df).fit()
+spec1_gap = ols('delta_emp2 ~ gap + co_owned + chain2 + chain3 + chain4', data=est_df).fit()
+spec2 = ols('delta_emp3 ~ state + co_owned + chain2 + chain3 + chain4', data=est_df).fit()
+spec2_gap = ols('delta_emp3 ~ gap + co_owned + chain2 + chain3 + chain4', data=est_df).fit()
+spec3 = ols('delta_emp4 ~ state + co_owned + chain2 + chain3 + chain4', data=est_df).fit()
+spec3_gap = ols('delta_emp4 ~ gap + co_owned + chain2 + chain3 + chain4', data=est_df).fit()
+
+spec1_coeffs = spec1.params
+spec1_SE = spec1.bse
+spec1_gap_coeffs = spec1_gap.params
+spec1_gap_SE = spec1_gap.bse
+spec2_coeffs = spec2.params
+spec2_SE = spec2.bse
+spec2_gap_coeffs = spec2_gap.params
+spec2_gap_SE = spec2_gap.bse
+spec3_coeffs = spec3.params
+spec3_SE = spec3.bse
+spec3_gap_coeffs = spec3_gap.params
+spec3_gap_SE = spec3_gap.bse
+
+Table5 = pd.DataFrame({
+    'Specification': ["Base specification", "Exclude managers in employment count", 
+                      "Weight part-time as 0.4 x full-time", "Weight part-time as 0.6 x full-time"],
+    'NJDummy_Coeff': [round(mod2_coeffs[1], 2), round(spec1_coeffs[1], 2), round(spec2_coeffs[1], 2), round(spec3_coeffs[1], 2)],
+    'NJDummy_SE': [round(mod2_SE[1], 2), round(spec1_SE[1], 2), round(spec2_SE[1], 2), round(spec3_SE[1], 2)],
+    'GapMeasure_Coeff': [round(mod4_coeffs[1], 2), round(spec1_gap_coeffs[1], 2), round(spec2_gap_coeffs[1], 2), round(spec3_gap_coeffs[1], 2)],
+    'GapMeasure_SE': [round(mod4_SE[1], 2), round(spec1_gap_SE[1], 2), round(spec2_gap_SE[1], 2), round(spec3_gap_SE[1], 2)],
+})
+
+print(Table5)
+
+### Not a replication, but a visual graph of the DID using sample means from table 3
+
+#function that calculates the expected value of the outcome 
 def outcome(t, control_intercept, treat_intercept_delta, trend, Δ, group, treated):
     return control_intercept + (treat_intercept_delta * group) + (t * trend) + (Δ * treated * group)
-
+# function used to calculate the dummy treatment variable, a function of time and group for untreated or treated
 def is_treated(t, intervention_time, group):
     return (t > intervention_time) * group
 
-#true parameters
+#Using sample mean values from table 3 to calculate the DID
 control_intercept = 23.33
 treat_intercept_delta = -2.89
 trend = -2.16
 Δ = 2.76
 intervention_time = 0.5
 
+#plotting DID
 fig, ax = plt.subplots()
 ti = np.linspace(0, 1,3)
 ax.plot(
@@ -416,7 +475,7 @@ ax.plot(
     markersize=0,
 )
 ax.set(
-    xlabel=("time"),
+    xlabel=("Time"),
     ylabel="FTE Employment (mean)",
     xticks=t,
     xticklabels=["February 1992", "November 1992"],
