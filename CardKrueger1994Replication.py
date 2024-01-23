@@ -9,12 +9,9 @@ from io import BytesIO, TextIOWrapper
 from sklearn.utils import Bunch
 import matplotlib.pyplot as plt
 import seaborn as sns
-from tabulate import tabulate
 from statsmodels.iolib.summary2 import summary_col
 import statsmodels.api as sm
-from adjustText import adjust_text
 import scipy.stats as stats
-
 
 r = requests.get("https://davidcard.berkeley.edu/data_sets/njmin.zip")
 z = zipfile.ZipFile(BytesIO(r.content))
@@ -71,7 +68,7 @@ table2['category'] = table2['category'].astype(str)
 # Pivot the table
 table2 = table2.pivot_table(index='category', columns='state', values='sum_tot', fill_value=0).reset_index()
 
-# Increase each value of 'sum_tot' by 1, except for values of 0 - add more reasoning to why this is necessary
+# Increase each value of 'sum_tot' by 1, fixes discrepancy of number of stores in table 2, about 20 less stores than there should be without this function
 def increment_value(x):
     try:
         return int(x) + 1 if int(x) != 0 else 0
@@ -179,7 +176,6 @@ grouped_data['state'] = grouped_data.index.map({'0': 'PA', '1': 'NJ'})
 # Calculate change in mean fte
 grouped_data['change_mean_fte'] = grouped_data['mean_after'] - grouped_data['mean_before']
 
-# Select the desired columns
 result_df = grouped_data[['state', 'mean_before', 'mean_after', 'change_mean_fte', 'se_mean_before', 'se_mean_after']]
 
 print(result_df)
@@ -200,17 +196,16 @@ balanced_sample['change_mean_fte_balanced'] = (
 # Recode 'state' values
 balanced_sample['state'] = balanced_sample.index.map({'0': 'PA', '1': 'NJ'})
 
-# Select the desired columns
 result_balanced_df = balanced_sample[['state', 'change_mean_fte_balanced']]
 
 print(result_balanced_df)
 
 #As state is both an index level and a column label, we do a little workaround by resetting the indexes, renaming the column in one of the DataFrames, and then merging the DataFrames on the renamed column. Then drop the renamed column
-# Reset the index if 'state' is in the index
+# Reset the index due to state being in the index
 result_df = result_df.reset_index(drop=True)
 result_balanced_df = result_balanced_df.reset_index(drop=True)
 
-# Rename 'state' column in one of the DataFrames to avoid conflict
+# Rename state column in one of the DataFrames to avoid conflict
 result_balanced_df.rename(columns={'state': 'state_balanced'}, inplace=True)
 
 full_table = pd.merge(result_df, result_balanced_df, left_on='state', right_on='state_balanced', how='left')
@@ -218,8 +213,6 @@ full_table = pd.merge(result_df, result_balanced_df, left_on='state', right_on='
 # Drop column as not needed
 full_table.drop('state_balanced', axis=1, inplace=True)
 
-
-# Display the combined result
 print(full_table)
 full_table = full_table[['state', 'mean_before', 'mean_after', 
                          'se_mean_before', 'se_mean_after', 
@@ -234,7 +227,7 @@ variable = pd.DataFrame({
     'variable': ['state', 'mean_before', 'mean_after', 'se_mean_before', 'se_mean_after', 'change_mean_fte', 'change_mean_fte_balanced']
 })
 
-# Filter out the 'state' row
+# Filter out the state row
 variable = variable[variable['variable'] != 'state']
 
 # Merge the transposed DataFrame with the variable DataFrame
@@ -244,7 +237,6 @@ result = pd.merge(variable, transposed, left_on='variable', right_index=True)
 result['PA'] = pd.to_numeric(result['PA'], errors='coerce')
 result['NJ'] = pd.to_numeric(result['NJ'], errors='coerce')
 
-# It's important to calculate the difference after ensuring both columns are numeric
 result['Diff_NJ-PA'] = result['NJ'] - result['PA']
 
 result = result[['variable', 'PA', 'NJ', 'Diff_NJ-PA']]
