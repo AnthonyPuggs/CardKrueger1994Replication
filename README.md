@@ -1,3 +1,8 @@
+---
+layout: default
+title: Card & Krueger (1994) Replication
+---
+
 # CardKrueger1994Replication
 
 # Introduction
@@ -35,7 +40,7 @@ As shown, it works according to how I explained it earlier. The counterfactual r
 Now, we can instead estimate this using regression analysis which is more accurate than just using sample means.
 We will start simply without any controls, the model is:
 
-$FTE_{it} = \beta_{1} + \beta_{2}STATE_{i} + \beta_{3}D_{t} + \delta(STATE_{i} \times D_{i}) + e_{it}$
+$$FTE_{it} = \beta_{1} + \beta_{2}STATE_{i} + \beta_{3}D_{t} + \delta(STATE_{i} \times D_{i}) + e_{it}$$
 
 Running this model results in the regression output:
 ![image](https://github.com/AnthonyPuggs/CardKrueger1994Replication/assets/61487785/93f50a7f-30cd-4c10-a442-44ee99325c56)
@@ -46,7 +51,7 @@ Now we can do another regression, adding control variables. Some of these are du
 
 With controls, the model is now:
 
-$FTE_{it} = \beta_{1} + \beta_{2}STATE_{i} + \beta_{3}D_{t} + \delta(STATE_{i} \times D_{i}) + \beta_{4}CHAIN2 + \beta_{5}CHAIN3 + \beta_{6}CHAIN4 + \beta_{7} COOWNED + \beta_{8}CENTRALJ + \beta_{9}SOUTHJ + \beta_{10}PA1$
+$$FTE_{it} = \beta_{1} + \beta_{2}STATE_{i} + \beta_{3}D_{t} + \delta(STATE_{i} \times D_{i}) + \beta_{4}CHAIN2 + \beta_{5}CHAIN3 + \beta_{6}CHAIN4 + \beta_{7} COOWNED + \beta_{8}CENTRALJ + \beta_{9}SOUTHJ + \beta_{10}PA1$$
 ![image](https://github.com/AnthonyPuggs/CardKrueger1994Replication/assets/61487785/fed75eba-6328-465d-bba6-dafb35c10d37)
 
 As can be seen, adding controls to the regression did not alter the difference-in-differences estimator, it is still positive. 
@@ -54,11 +59,11 @@ As can be seen, adding controls to the regression did not alter the difference-i
 This analysis, while insightful - make no allowance for other sources of variation in employment growth, such as across chains. We can use new linear regression models to incorporate this. Using panel data, we can control for unobserved individual-specific characteristics.
 These are of the form of:
 
-(1a) $\Delta E_{i}= a + bX_{i} + cNJ_{i} + \varepsilon_{i}$
+(1a) $$\Delta E_{i}= a + bX_{i} + cNJ_{i} + \varepsilon_{i}$$
 
 and
 
-(1b) $\Delta E_{i}= a' + b'X_{i} + c'GAP_{i} + \varepsilon'_{i}$
+(1b) $$\Delta E_{i}= a' + b'X_{i} + c'GAP_{i} + \varepsilon'_{i}$$
 
 Where:
 ΔEi is the change in employment from before and after the minimum wage increase at store i

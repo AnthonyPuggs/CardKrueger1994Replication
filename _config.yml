@@ -1,0 +1,5 @@
+title: "Card & Krueger (1994) Replication"
+description: "Python replication of the seminal minimum wage paper"
+theme: minima
+kramdown:
+  math_engine: mathjax
